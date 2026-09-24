@@ -1,0 +1,23 @@
+[
+  {
+    "id": "Default",
+    "name": "STEP COUNTER",
+    "image": "",
+    "wav": "",
+    "color": "0x07FF"
+  },
+  {
+    "id": "Wood",
+    "name": "Wood Step",
+    "image": "/image/Sample_Wood.png",
+    "wav": "/wav/Step_Wood.wav",
+    "color": "0x34E1"
+  },
+  {
+    "id": "Bounce",
+    "name": "Bounce Step",
+    "image": "/image/Sample_Bounce.png",
+    "wav": "/wav/Step_Bounce.wav",
+    "color": "0x00E5FF"
+  }
+]
