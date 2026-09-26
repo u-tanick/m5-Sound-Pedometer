@@ -10,7 +10,7 @@
     "id": "Wood",
     "name": "Wood Step",
     "image": "/image/Sample_Wood.png",
-    "wav": "/wav/Step_Wood.wav",
+    "wav": "/wav/Sample_Wood.wav",
     "color": "0x34E1"
   },
   {

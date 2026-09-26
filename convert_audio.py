@@ -6,9 +6,8 @@ import miniaudio
 import numpy as np
 
 os.makedirs("data/wav", exist_ok=True)
-os.makedirs("files/wav", exist_ok=True)
 
-files = sorted(glob.glob("files/wav/*.wav") + glob.glob("files/mp3/*.mp3"))
+files = sorted(glob.glob("data/wav/*.wav") + glob.glob("data/wav/*.mp3"))
 print("Found audio files:", files)
 
 audio_data = {}
@@ -49,14 +48,12 @@ for name, d in audio_data.items():
     new_rms = np.sqrt(np.mean(normalized.astype(np.float32) ** 2))
     print(f"[{name}] Normalized gain={gain:.2f}x -> New Peak={np.max(np.abs(normalized))}, New RMS={new_rms:.1f}")
     
-    # Save to both data/wav/ and files/wav/
-    for out_dir in ["data/wav", "files/wav"]:
-        wav_path = os.path.join(out_dir, f"{name}.wav")
-        with wave.open(wav_path, "wb") as wf:
-            wf.setnchannels(1)
-            wf.setsampwidth(2) # 16-bit
-            wf.setframerate(d["sample_rate"])
-            wf.writeframes(normalized.tobytes())
-        print(f"Saved: {wav_path} ({os.path.getsize(wav_path)} bytes)")
+    wav_path = os.path.join("data/wav", f"{name}.wav")
+    with wave.open(wav_path, "wb") as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2) # 16-bit
+        wf.setframerate(d["sample_rate"])
+        wf.writeframes(normalized.tobytes())
+    print(f"Saved: {wav_path} ({os.path.getsize(wav_path)} bytes)")
 
 print("\nAll audio converted and normalized to high quality WAV successfully!")

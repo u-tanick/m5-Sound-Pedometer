@@ -17,7 +17,7 @@ struct CharacterTheme {
     String display_name;
     String image_path;
     String wav_path;
-    uint32_t theme_color{0xFFFF};
+    uint16_t theme_color{0xFFFF};
 };
 
 static std::vector<CharacterTheme> s_themes;
@@ -73,7 +73,7 @@ static bool s_need_redraw = true;
 // カラーコード変換補助
 // ==========================================
 
-uint32_t parse_color_string(const String& str) {
+uint16_t parse_color_string(const String& str) {
     if (str.isEmpty()) return 0x07FF;
     if (str.startsWith("#")) {
         // "#RRGGBB" 形式
@@ -84,7 +84,7 @@ uint32_t parse_color_string(const String& str) {
         return M5.Lcd.color565(r, g, b);
     }
     // "0x07FF" 形式など
-    return static_cast<uint32_t>(strtoul(str.c_str(), nullptr, 0));
+    return static_cast<uint16_t>(strtoul(str.c_str(), nullptr, 0));
 }
 
 // ==========================================
@@ -287,11 +287,6 @@ void draw_main_screen() {
         M5.Lcd.setTextColor(TFT_DARKGRAY);
         M5.Lcd.setTextSize(1);
         M5.Lcd.drawString("Swipe left/right to change footstep sound", 160, 132);
-
-        // 無音バッジ
-        M5.Lcd.fillRoundRect(120, 148, 80, 18, 4, M5.Lcd.color565(30, 36, 50));
-        M5.Lcd.setTextColor(TFT_SILVER);
-        M5.Lcd.drawString("[ MUTE MODE ]", 160, 157);
         M5.Lcd.endWrite();
     }
 
@@ -301,41 +296,29 @@ void draw_main_screen() {
     M5.Lcd.startWrite();
 
     if (has_image) {
-        // ── 画像付き画面: ステータスとボタンヒントのみ ──
-        // 画像を最大限見せるため、ヘッダーや歩数表示は省略
+        // ── 画像付き画面: 右上に記号のみ (■ / ▶) をすっきり配置 ──
+        const int badge_w = 28;
+        const int badge_h = 28;
+        const int badge_x = 320 - badge_w - 6; // 286
+        const int badge_y = 6;
 
-        // RUN/STOP ステータス (右下、背景帯付き)
-        {
-            uint32_t status_color = s_is_running ? TFT_GREEN : TFT_ORANGE;
-            const char* status_text = s_is_running ? "RUN [A:STOP]" : "STOP [A:START]";
-            M5.Lcd.setTextSize(1);
-            int tw = M5.Lcd.textWidth(status_text);
-            int band_x = 308 - tw - 18;
-            int band_y = 208;
-            // 背景帯 (右端まで伸ばす)
-            M5.Lcd.fillRect(band_x, band_y, 320 - band_x, 18,
-                            M5.Lcd.color565(30, 34, 46));
-            // アイコン
-            if (s_is_running) {
-                M5.Lcd.fillCircle(band_x + 10, band_y + 9, 4, status_color);
-            } else {
-                M5.Lcd.fillRect(band_x + 6, band_y + 5, 8, 8, status_color);
-            }
-            // テキスト
-            M5.Lcd.setTextDatum(MR_DATUM);
-            M5.Lcd.setTextColor(status_color);
-            M5.Lcd.drawString(status_text, 308, band_y + 9);
-        }
+        // 背景バッジ（画像の上でも視認できる薄いグレーの角丸プレート）
+        M5.Lcd.fillRoundRect(badge_x, badge_y, badge_w, badge_h, 6, M5.Lcd.color565(85, 92, 105));
+        M5.Lcd.drawRoundRect(badge_x, badge_y, badge_w, badge_h, 6, M5.Lcd.color565(135, 145, 160));
 
-        // ボタンヒント (最下部グレー帯)
-        {
-            M5.Lcd.fillRect(0, 224, 320, 16, M5.Lcd.color565(40, 44, 56));
-            M5.Lcd.setTextSize(1);
-            M5.Lcd.setTextColor(TFT_WHITE);
-            M5.Lcd.setTextDatum(MC_DATUM);
-            M5.Lcd.drawString("[A] Start/Stop", 53, 232);
-            M5.Lcd.drawString("[B] Log", 160, 232);
-            M5.Lcd.drawString("[C] Hold Reset", 267, 232);
+        // 記号 (■: STOP / ▶: RUN)
+        if (s_is_running) {
+            // RUN: ▶ (緑色)
+            M5.Lcd.fillTriangle(badge_x + 9, badge_y + 7,
+                                badge_x + 9, badge_y + badge_h - 7,
+                                badge_x + badge_w - 7, badge_y + badge_h / 2,
+                                TFT_GREEN);
+        } else {
+            // STOP: ■ (オレンジ色)
+            const int sq_size = 12;
+            const int sq_x = badge_x + (badge_w - sq_size) / 2;
+            const int sq_y = badge_y + (badge_h - sq_size) / 2;
+            M5.Lcd.fillRoundRect(sq_x, sq_y, sq_size, sq_size, 2, TFT_ORANGE);
         }
     } else {
         // ── MUTE 画面: フル UI ──
@@ -343,6 +326,36 @@ void draw_main_screen() {
         // 上部ヘッダーバー
         M5.Lcd.fillRect(0, 0, 320, 34, M5.Lcd.color565(18, 20, 26));
         M5.Lcd.drawFastHLine(0, 34, 320, theme.theme_color);
+
+        // バッテリー残量 (左肩)
+        int bat = M5.Power.getBatteryLevel();
+        M5.Lcd.setTextDatum(ML_DATUM);
+        M5.Lcd.setTextColor(bat < 20 ? TFT_RED : (bat < 50 ? TFT_YELLOW : TFT_GREEN));
+        M5.Lcd.setTextSize(1);
+        char bat_str[16];
+        snprintf(bat_str, sizeof(bat_str), "BAT %d%%", bat);
+        M5.Lcd.drawString(bat_str, 12, 17);
+
+        // RUN/STOP ステータス (右肩)
+        {
+            uint16_t status_color = s_is_running ? static_cast<uint16_t>(TFT_GREEN) : static_cast<uint16_t>(TFT_ORANGE);
+            const char* status_text = s_is_running ? "RUN" : "STOP";
+            M5.Lcd.setTextSize(1);
+            int tw = M5.Lcd.textWidth(status_text);
+            int icon_x = 308 - tw - 10;
+            int icon_y = 17;
+
+            if (s_is_running) {
+                // RUN: 緑の丸
+                M5.Lcd.fillCircle(icon_x, icon_y, 4, TFT_GREEN);
+            } else {
+                // STOP: オレンジの四角
+                M5.Lcd.fillRect(icon_x - 4, icon_y - 4, 8, 8, TFT_ORANGE);
+            }
+            M5.Lcd.setTextDatum(MR_DATUM);
+            M5.Lcd.setTextColor(status_color);
+            M5.Lcd.drawString(status_text, 308, icon_y);
+        }
 
         // インジケータードット
         int theme_count = static_cast<int>(s_themes.size());
@@ -357,15 +370,6 @@ void draw_main_screen() {
                 M5.Lcd.drawCircle(x, y, 3, TFT_DARKGRAY);
             }
         }
-
-        // バッテリー残量
-        int bat = M5.Power.getBatteryLevel();
-        M5.Lcd.setTextDatum(MR_DATUM);
-        M5.Lcd.setTextColor(bat < 20 ? TFT_RED : (bat < 50 ? TFT_YELLOW : TFT_GREEN));
-        M5.Lcd.setTextSize(1);
-        char bat_str[16];
-        snprintf(bat_str, sizeof(bat_str), "BAT %d%%", bat);
-        M5.Lcd.drawString(bat_str, 308, 17);
 
         // 下部カウンターバー
         M5.Lcd.fillRect(0, 174, 320, 66, M5.Lcd.color565(14, 16, 22));
@@ -394,26 +398,8 @@ void draw_main_screen() {
         }
         M5.Lcd.setTextDatum(MR_DATUM);
         M5.Lcd.setTextSize(2);
-        M5.Lcd.setTextColor(TFT_CYAN);
-        M5.Lcd.drawString(dist_str, 305, 195);
-
-        // RUN/STOP ステータス
-        {
-            uint32_t status_color = s_is_running ? TFT_GREEN : TFT_ORANGE;
-            M5.Lcd.setTextSize(1);
-            const char* status_text = s_is_running ? "RUN [A:STOP]" : "STOP [A:START]";
-            int tw = M5.Lcd.textWidth(status_text);
-            int icon_x = 308 - tw - 12;
-            int icon_y = 218;
-            if (s_is_running) {
-                M5.Lcd.fillCircle(icon_x, icon_y, 4, status_color);
-            } else {
-                M5.Lcd.fillRect(icon_x - 4, icon_y - 4, 8, 8, status_color);
-            }
-            M5.Lcd.setTextDatum(MR_DATUM);
-            M5.Lcd.setTextColor(status_color);
-            M5.Lcd.drawString(status_text, 308, icon_y);
-        }
+        M5.Lcd.setTextColor(M5.Lcd.color565(170, 195, 220));
+        M5.Lcd.drawString(dist_str, 305, 206);
 
         // ボタンヒント
         {
