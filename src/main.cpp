@@ -284,7 +284,7 @@ void draw_main_screen() {
         M5.Lcd.setTextSize(3);
         M5.Lcd.drawString("Sound Pedometer", 160, 80);
 
-        // スワイプ案内 (Swipe left/right をシアンでハイライト)
+        // スワイプ案内 (Swipe left/right をイエローでハイライト)
         M5.Lcd.setTextSize(1);
         const char* sw_key = "Swipe left/right";
         const char* sw_rest = " to change footstep sound";
@@ -294,7 +294,7 @@ void draw_main_screen() {
         int sw_y = 122;
 
         M5.Lcd.setTextDatum(ML_DATUM);
-        M5.Lcd.setTextColor(TFT_CYAN);
+        M5.Lcd.setTextColor(TFT_YELLOW);
         M5.Lcd.drawString(sw_key, sw_start_x, sw_y);
 
         M5.Lcd.setTextColor(TFT_DARKGRAY);
