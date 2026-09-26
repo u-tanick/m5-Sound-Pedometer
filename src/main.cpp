@@ -282,11 +282,12 @@ void draw_main_screen() {
         M5.Lcd.setTextDatum(MC_DATUM);
         M5.Lcd.setTextColor(TFT_CYAN);
         M5.Lcd.setTextSize(3);
-        M5.Lcd.drawString("Sound Pedometer", 160, 85);
+        M5.Lcd.drawString("Sound Pedometer", 160, 80);
 
         M5.Lcd.setTextColor(TFT_DARKGRAY);
         M5.Lcd.setTextSize(1);
-        M5.Lcd.drawString("Swipe left/right to change footstep sound", 160, 132);
+        M5.Lcd.drawString("Swipe left/right to change footstep sound", 160, 122);
+        M5.Lcd.drawString("Hold [A][B][C] buttons to operate", 160, 142);
         M5.Lcd.endWrite();
     }
 
@@ -408,7 +409,7 @@ void draw_main_screen() {
             M5.Lcd.setTextDatum(MC_DATUM);
             M5.Lcd.drawString("[A] Start/Stop", 53, 232);
             M5.Lcd.drawString("[B] Log", 160, 232);
-            M5.Lcd.drawString("[C] Hold Reset", 267, 232);
+            M5.Lcd.drawString("[C] Reset", 267, 232);
         }
     }
 
@@ -525,7 +526,7 @@ void draw_log_screen() {
     M5.Lcd.setTextDatum(MC_DATUM);
     M5.Lcd.setTextColor(TFT_DARKGRAY);
     M5.Lcd.setTextSize(1);
-    M5.Lcd.drawString("[B] Back to Main   |   [Hold C] Reset All Steps", 160, 231);
+    M5.Lcd.drawString("[B] Back to Main   |   [C] Reset All Steps", 160, 231);
 
     M5.Lcd.endWrite();
 }
@@ -663,23 +664,39 @@ void handle_inputs() {
         }
     }
 
-    // 2. ボタン操作 (Core2 画面下部 A, B, C ボタン)
-    // Button A: カウント開始 / 停止
-    if (M5.BtnA.wasClicked()) {
-        s_is_running = !s_is_running;
-        play_beep(s_is_running ? 1500 : 750, 80);
-        save_data();
-        s_need_redraw = true;
+    // 2. ボタン操作 (Core2 画面下部 A, B, C ボタン - すべて長押しで誤動作防止)
+    // Button A: 長押しでカウント開始 / 停止 (約800ms)
+    {
+        static bool s_btnA_triggered = false;
+        if (M5.BtnA.pressedFor(800)) {
+            if (!s_btnA_triggered) {
+                s_btnA_triggered = true;
+                s_is_running = !s_is_running;
+                play_beep(s_is_running ? 1500 : 750, 80);
+                save_data();
+                s_need_redraw = true;
+            }
+        } else if (M5.BtnA.wasReleased()) {
+            s_btnA_triggered = false;
+        }
     }
 
-    // Button B: ログ画面表示 / メイン画面へ戻る
-    if (M5.BtnB.wasClicked()) {
-        s_screen_mode = (s_screen_mode == SCREEN_MAIN) ? SCREEN_LOG : SCREEN_MAIN;
-        play_beep(1200, 50);
-        s_need_redraw = true;
+    // Button B: 長押しでログ画面表示 / メイン画面へ戻る (約800ms)
+    {
+        static bool s_btnB_triggered = false;
+        if (M5.BtnB.pressedFor(800)) {
+            if (!s_btnB_triggered) {
+                s_btnB_triggered = true;
+                s_screen_mode = (s_screen_mode == SCREEN_MAIN) ? SCREEN_LOG : SCREEN_MAIN;
+                play_beep(1200, 50);
+                s_need_redraw = true;
+            }
+        } else if (M5.BtnB.wasReleased()) {
+            s_btnB_triggered = false;
+        }
     }
 
-    // Button C: 長押しでカウントリセット（どの画面でも常に有効）
+    // Button C: 長押しでカウントリセット (約1500ms、どの画面でも常に有効)
     {
         static bool s_reset_triggered = false;
         if (M5.BtnC.pressedFor(1500)) {
@@ -689,10 +706,8 @@ void handle_inputs() {
                 play_reset_sound();
                 s_need_redraw = true;
             }
-        } else {
-            if (M5.BtnC.wasReleased()) {
-                s_reset_triggered = false;
-            }
+        } else if (M5.BtnC.wasReleased()) {
+            s_reset_triggered = false;
         }
     }
 }
