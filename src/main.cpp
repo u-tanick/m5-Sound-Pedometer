@@ -284,10 +284,36 @@ void draw_main_screen() {
         M5.Lcd.setTextSize(3);
         M5.Lcd.drawString("Sound Pedometer", 160, 80);
 
-        M5.Lcd.setTextColor(TFT_DARKGRAY);
+        // スワイプ案内 (Swipe left/right をシアンでハイライト)
         M5.Lcd.setTextSize(1);
-        M5.Lcd.drawString("Swipe left/right to change footstep sound", 160, 122);
-        M5.Lcd.drawString("Hold [A] [B] [C] buttons to operate", 160, 142);
+        const char* sw_key = "Swipe left/right";
+        const char* sw_rest = " to change footstep sound";
+        int w_sw_key = M5.Lcd.textWidth(sw_key);
+        int w_sw_rest = M5.Lcd.textWidth(sw_rest);
+        int sw_start_x = 160 - (w_sw_key + w_sw_rest) / 2;
+        int sw_y = 122;
+
+        M5.Lcd.setTextDatum(ML_DATUM);
+        M5.Lcd.setTextColor(TFT_CYAN);
+        M5.Lcd.drawString(sw_key, sw_start_x, sw_y);
+
+        M5.Lcd.setTextColor(TFT_DARKGRAY);
+        M5.Lcd.drawString(sw_rest, sw_start_x + w_sw_key, sw_y);
+
+        // ボタン操作案内 (Push Hold [A] [B] [C] をイエローでハイライト)
+        const char* key_text = "Push Hold [A] [B] [C]";
+        const char* rest_text = " buttons to operate";
+        int w_key = M5.Lcd.textWidth(key_text);
+        int w_rest = M5.Lcd.textWidth(rest_text);
+        int start_x = 160 - (w_key + w_rest) / 2;
+        int text_y = 142;
+
+        M5.Lcd.setTextDatum(ML_DATUM);
+        M5.Lcd.setTextColor(TFT_YELLOW);
+        M5.Lcd.drawString(key_text, start_x, text_y);
+
+        M5.Lcd.setTextColor(TFT_DARKGRAY);
+        M5.Lcd.drawString(rest_text, start_x + w_key, text_y);
         M5.Lcd.endWrite();
     }
 
