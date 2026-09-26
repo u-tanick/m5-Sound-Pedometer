@@ -1,4 +1,4 @@
-# m5-step-sound-counter
+# m5-Sound-Pedometer
 
 M5Stack Core2 を使った万歩計（Pedometer）システムです。
 歩くたびに設定した効果音や足音がゼロ遅延で鳴ります。
