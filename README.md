@@ -25,6 +25,14 @@ M5Stack Core2 を使った万歩計（Pedometer）システムです。
 
 ---
 
+## デモ動画
+
+[![デモ動画 (YouTube Shorts)](https://img.youtube.com/vi/RXwJyUS1mBw/hqdefault.jpg)](https://www.youtube.com/shorts/RXwJyUS1mBw)
+
+> 👆 画像をクリックすると YouTube Shorts で実際の動作デモ動画を視聴できます。
+
+---
+
 ## 画面操作・ボタン操作
 
 ### ボタン操作（Core2 下部タッチボタン - 衣服の擦れによる誤動作を防ぐため長押しで動作）
@@ -36,9 +44,12 @@ M5Stack Core2 を使った万歩計（Pedometer）システムです。
 
 ### 画面タッチ操作
 - **メイン画面**: 画面上を左右にスワイプしてテーマ（足音・画像）を切り替え
+
 ![スワイプ](./asset/swipe.png)
+
 - **ログ＆設定画面**:
   - `[-]` / `[+]` ボタンのタップ、またはスライダートラックのドラッグでスピーカー音量（0%〜100%）を調整可能
+
 ![ログ画面](./asset/log-view.png)
 
 ---
