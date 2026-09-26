@@ -287,7 +287,7 @@ void draw_main_screen() {
         M5.Lcd.setTextColor(TFT_DARKGRAY);
         M5.Lcd.setTextSize(1);
         M5.Lcd.drawString("Swipe left/right to change footstep sound", 160, 122);
-        M5.Lcd.drawString("Hold [A][B][C] buttons to operate", 160, 142);
+        M5.Lcd.drawString("Hold [A] [B] [C] buttons to operate", 160, 142);
         M5.Lcd.endWrite();
     }
 
